@@ -1,4 +1,4 @@
-import type { TodoVibe } from "../types/todoVibeType";
+import type { TodoVibe } from "../types/TodoVibeType";
 
 export const vibeIcons: Record<TodoVibe, string> = {
 	quick: "/quick.svg",

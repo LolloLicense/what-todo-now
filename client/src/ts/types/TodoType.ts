@@ -1,4 +1,5 @@
-import type { TodoVibe } from "./todoVibeType";
+import type { TodoVibe } from "./TodoVibeType";
+
 // Describe what a todo from the API looks like
 export type Todo = {
 	id: number;
