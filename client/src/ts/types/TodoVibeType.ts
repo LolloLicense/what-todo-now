@@ -1,0 +1,1 @@
+export type TodoVibe = "quick" | "adulting" | "cursed" | "iconic";

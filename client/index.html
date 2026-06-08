@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    class="min-h-screen bg-slate-950 p-4 px-6 py-10 shadow-2xl shadow-pink-500/10 backdrop-blur text-white"
+  >
+    <main
+      class="relative min-h-full w-full overflow-hidden rounded-4xl border border-white/10 bg-slate-950/80 px-6 py-10 shadow-2xl shadow-pink-500/10 backdrop-blur"
+    >
+      <div
+        class="absolute -top-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-pink-500/30 blur-3xl"
+      ></div>
+
+      <div
+        class="absolute -bottom-24 right-0 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl"
+      ></div>
+
+      <section class="relative z-10">
+        <p
+          class="mb-3 text-center text-xs font-bold uppercase tracking-[0.3em] text-pink-300"
+        >
+          Tiny task manager
+        </p>
+
+        <h1
+          class="mb-8 text-center text-5xl font-black leading-none tracking-tight text-white"
+        >
+          What Todo Now!?
+        </h1>
+
+        <form id="todoForm" class="mb-8 grid gap-3">
+          <div class="w-full flex gap-4">
+            <!-- Inputfiled -->
+            <label for="todoInput" class="sr-only">New todo</label>
+            <input
+              id="todoInput"
+              name="todo"
+              type="text"
+              placeholder="Add a todo..."
+              class="w-full min-h-14 rounded-2xl border border-white/10 bg-white/5 px-5 text-white placeholder:text-slate-400 outline-none backdrop-blur transition focus:border-pink-400 focus:ring-4 focus:ring-pink-400/20"
+            />
+            <!-- Vibe -->
+            <label for="vibeSelect" class="sr-only">Todo vibe</label>
+            <select
+              id="vibeSelect"
+              name="vibe"
+              required
+              class="min-h-14 rounded-2xl py-2 border border-white/10 bg-white/5 px-5 text-white outline-none backdrop-blur transition focus:border-pink-400 focus:ring-4 focus:ring-pink-400/20"
+            >
+              <option value="" disabled selected>Choose vibe</option>
+              <option value="quick">Quick win</option>
+              <option value="adulting">Adulting</option>
+              <option value="cursed">Cursed</option>
+              <option value="iconic">Iconic</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            class="min-h-14 rounded-2xl border border-pink-200/40 bg-pink-600/30 px-6 font-black text-pink-50 backdrop-blur-md transition hover:-translate-y-0.5 hover:border-pink-200/70 hover:bg-pink-300/30 focus:outline-none focus:ring-4 focus:ring-pink-300/20"
+          >
+            Add
+          </button>
+        </form>
+
+        <ul id="todoList" class="grid gap-4"></ul>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
