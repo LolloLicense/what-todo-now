@@ -1,10 +1,15 @@
 import type { TodoVibe } from "../types/TodoVibeType";
 
+const iconBasePath = import.meta.env.BASE_URL;
+export const getPublicAssetPath = (filename: string) => {
+	return `${import.meta.env.BASE_URL}${filename}`;
+};
+
 export const vibeIcons: Record<TodoVibe, string> = {
-	quick: "/quick.svg",
-	adulting: "/adulting.svg",
-	cursed: "/cursed.svg",
-	iconic: "/iconic.svg",
+	quick: `${iconBasePath}quick.svg`,
+	adulting: `${iconBasePath}adulting.svg`,
+	cursed: `${iconBasePath}cursed.svg`,
+	iconic: `${iconBasePath}iconic.svg`,
 };
 
 export const createVibeIcon = (vibe: TodoVibe) => {
@@ -15,14 +20,14 @@ export const createVibeIcon = (vibe: TodoVibe) => {
 	return icon
 }
 
-export const createIcon = (src:string) =>{
-    const icon = document.createElement("img"); 
-    icon.src = src
-    icon.alt = ""
-    icon.className = "h-4 w-4"
+export const createIcon = (filename: string) => {
+	const icon = document.createElement("img");
+	icon.src = getPublicAssetPath(filename);
+	icon.alt = "";
+	icon.className = "h-4 w-4";
 
-    return icon
-}
+	return icon;
+};
 
 export const createIconButton = (ariaLabel: string) => {
 	const button = document.createElement("button");

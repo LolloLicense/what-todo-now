@@ -37,7 +37,7 @@ const renderSubtasks = (
 		});
 
 		const deleteButton = createIconButton(`Delete ${subtask.content}`);
-		const deleteIcon = createIcon("/delete.svg");
+		const deleteIcon = createIcon("delete.svg");
 
 		deleteButton.append(deleteIcon);
 

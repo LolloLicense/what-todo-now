@@ -48,7 +48,7 @@ export const renderTodos = (todos: Todo[], todoList: HTMLUListElement) => {
 
 
 		//Delete button
-        const deleteIcon = createIcon("/delete.svg");
+        const deleteIcon = createIcon("delete.svg");
         const deleteButton = createIconButton(`Delete ${todo.content}`);
         deleteButton.addEventListener("click", async () => {
 			await deleteTodo(todo.id);
@@ -56,8 +56,8 @@ export const renderTodos = (todos: Todo[], todoList: HTMLUListElement) => {
 		});
 
         //View more button
-        const viewMoreButtonIcon = createIcon("/plus.svg");
-        const viewLessButtonIcon = createIcon("/minus.svg");
+        const viewMoreButtonIcon = createIcon("plus.svg");
+        const viewLessButtonIcon = createIcon("minus.svg");
 		const viewMoreButton = createIconButton(`View subtasks for ${todo.content}`);
 		viewMoreButton.addEventListener("click", async () => {
 			const isOpen = !subtaskPanel.panel.classList.contains("hidden");
