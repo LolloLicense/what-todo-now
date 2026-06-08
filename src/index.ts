@@ -6,7 +6,7 @@ import subtaskRouter from "./routes/subtasks.js";
 import { connectToDatabase } from "./config/db.js";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.disable("x-powered-by");
 
