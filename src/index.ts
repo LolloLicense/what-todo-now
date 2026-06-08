@@ -16,12 +16,13 @@ app.use(express.json());
 
 
 // Routes
-app.use("/todos", todoRouter);
 
-app.get("/ping", (_request, response) => {
-	response.send("Hello World");
-});
+app.use("/todos", todoRouter);
 app.use("/subtasks", subtaskRouter);
+//Health
+app.get("/ping", (_request, response) => {
+	response.status(200).json({status: "ok"});
+});
 
 
 
