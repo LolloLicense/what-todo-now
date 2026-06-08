@@ -12,6 +12,8 @@ const formattedTodo = (rows: RowDataPacket[]) => {
 		content: todo.todo_content,
 		done: todo.todo_done,
 		created_at: todo.todo_created_at,
+		vibe: todo.todo_vibe,
+		userId: todo.todo_user_id,
 		subtasks: rows
 		.filter((row) => row.subtask_id !== null)
 		.map((row) => {
@@ -28,7 +30,13 @@ const formattedTodo = (rows: RowDataPacket[]) => {
 
 export const fetchAllTodos = async (request: Request, response: Response) => {
 	try {
-		const [results] = await db.query("SELECT * FROM todos");
+		const userId = request.query.userId;
+		if (typeof userId !== "string") {
+			response.status(400).json({ error: "userId is required" });
+			return;
+		}
+		const [results] = await db.query("SELECT * FROM todos WHERE user_id = ?",
+			[userId]);
 		response.json(results);
 	} catch (error: unknown) {
 		const message = error instanceof Error ? error.message : "Unknown error";
@@ -38,24 +46,31 @@ export const fetchAllTodos = async (request: Request, response: Response) => {
 
 export const fetchTodo = async (request: Request, response: Response) => {
     const id = request.params.id
+	const userId = request.query.userId;
+	if (typeof userId !== "string") {
 
+		response.status(400).json({ error: "userId is required" });
+		return;
+	}
     try {
       const [rows] = await db.query<RowDataPacket[]>(
-        `SELECT
+       `SELECT
 			todos.id AS todo_id,
 			todos.content AS todo_content,
 			todos.done AS todo_done,
+			todos.vibe AS todo_vibe,
+			todos.user_id AS todo_user_id,
 			todos.created_at AS todo_created_at,
 			subtasks.id AS subtask_id,
 			subtasks.todo_id AS subtask_todo_id,
 			subtasks.content AS subtask_content,
 			subtasks.done AS subtask_done,
 			subtasks.created_at AS subtask_created_at
-		FROM todos
+			FROM todos
 		LEFT JOIN subtasks ON todos.id = subtasks.todo_id
 		WHERE todos.id = ?;`,
         // placeholder för att undvika injections
-        [id]
+        [id, userId]
       );
       const todo = rows[0]
       if(!todo) {
@@ -70,32 +85,35 @@ export const fetchTodo = async (request: Request, response: Response) => {
 }
 
 export const createTodo =  async(request: Request, response: Response) => {
-    const {content, vibe} = request.body
-    if (content === undefined || vibe === undefined) {
-        response.status(400).json({error: 'Content is requried'});
+    const {content, vibe, userId} = request.body
+    if (content === undefined || vibe === undefined || userId === undefined) {
+        response.status(400).json({error: 'Content, vibe and userId is required'});
         return
         }
     try {
-        const sql = `INSERT INTO todos (content, done, vibe)
-        VALUES (?, ?, ?) `;
+        const sql = `INSERT INTO todos (content, done, vibe, user_id)
+        VALUES (?, ?, ?, ?) `;
 
-        const [result] = await db.query<ResultSetHeader>(sql, [content, false, vibe]);
-        response.status(201).json({message: 'Todo created', newTodo: {id: result.insertId, content : content, vibe : vibe}})
+        const [result] = await db.query<ResultSetHeader>(sql, [content, false, vibe, userId]);
+        response.status(201).json({message: 'Todo created', newTodo: {
+			id: result.insertId,
+			content,
+			done: false,
+			vibe,
+			userId,}})
         
-    } catch (error) {
-        console.log('Error 1', error)
-        response.json({error: error})
-    }finally{
-        console.log('This code will alway run')
+    } catch (error: unknown) {
+		const message = error instanceof Error ? error.message : "Unknown error";
+		response.status(500).json({ error: message });
     }
 }
 
 export const updateTodo = async (request: Request, response: Response) => {
 	const id = request.params.id;
-	const { content, done } = request.body;
+	const { content, done, userId } = request.body;
 
-	if (content === undefined || done === undefined) {
-		response.status(400).json({ error: "Content and done is required" });
+	if (content === undefined || done === undefined || userId === undefined) {
+		response.status(400).json({ error: "Content, done and userId is required" });
 		return;
 	}
 
@@ -104,8 +122,8 @@ export const updateTodo = async (request: Request, response: Response) => {
 			`
 			UPDATE todos
 			SET content = ?, done = ?
-			WHERE id = ?
-		`, [content, done, id]
+			WHERE id = ? AND user_id = ?
+		`, [content, done, id, userId]
 		);
 
 		if (result.affectedRows === 0) {
@@ -129,9 +147,15 @@ export const updateTodo = async (request: Request, response: Response) => {
 
 export const deleteTodo = async(request: Request, response: Response) => {
     const id = request.params.id
+	
     try {
-        const sql = `DELETE FROM todos WHERE id = ?`;
-        const [result] = await db.query<ResultSetHeader>(sql, [id]);
+		const { userId } = request.body;
+		if (userId === undefined) {
+			response.status(400).json({ error: "userId is required" });
+			return;
+		}
+        const sql = `DELETE FROM todos WHERE id = ? AND user_id = ?`;
+        const [result] = await db.query<ResultSetHeader>(sql, [id, userId]);
         if(result.affectedRows === 0) {
             response.status(404).json({message: 'Todo not found'})
             return
