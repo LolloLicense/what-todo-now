@@ -13,7 +13,7 @@
 ![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 
-Duly helps you remember **What Todo Now**, en fullstack todo-app byggd med TypeScript, Express, MySQL och Vite.
+Duly helps you remember **What Todo Now** - a fullstack task manager built with TypeScript, Express, MySQL and Vite.
 
 The project started as a classic todo exercise, but quickly grew into a more personal task app where each todo can be categorized, checked off, deleted and expanded with subtasks. The main focus was understanding how frontend, backend and database actually work together — from forms and fetch requests to routes, controllers, MySQL relations and rendered UI in the browser.
 
