@@ -5,12 +5,31 @@ import { getUserId } from "../utils/userId";
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 const API_URL = `${API_BASE_URL}/todos`;
 
+const getErrorMessage = async (response: Response, fallbackMessage: string) => {
+	try {
+		const data = await response.json();
+
+		if (typeof data.error === "string") {
+			return data.error;
+		}
+
+		if (typeof data.message === "string") {
+			return data.message;
+		}
+
+		return fallbackMessage;
+	} catch {
+		return fallbackMessage;
+	}
+};
+
 //Get 
 export const getTodos = async (): Promise<Todo[]> => {
 	const userId = getUserId();
 	const response = await fetch(`${API_URL}?userId=${userId}`);
 	if (!response.ok) {
-		throw new Error("Could not fetch todos");
+		const message = await getErrorMessage(response, "Could not fetch todos");
+		throw new Error(message);
 	}
 	return response.json();
 };
