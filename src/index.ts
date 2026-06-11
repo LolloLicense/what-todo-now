@@ -7,11 +7,18 @@ import { connectToDatabase } from "./config/db.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const allowedOrigins = [
+	"http://localhost:5173",
+	"http://localhost:5174",
+	"https://lollolicense.github.io",
+];
 
 app.disable("x-powered-by");
 
 // Middleware
-app.use(cors());
+app.use(cors({
+	origin: allowedOrigins,})
+);
 app.use(express.json());
 
 
