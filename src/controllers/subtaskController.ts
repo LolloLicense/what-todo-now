@@ -8,14 +8,20 @@ export const fetchSubtasksByTodoId = async (
 	response: Response,
 ) => {
 	const todoId = request.params.todoId;
+	const userId = request.query.userId;
+	if (typeof userId !== "string") {
+		response.status(400).json({ error: "userId is required" });
+		return;
+	}
 	try {
 		const [results] = await db.query<RowDataPacket[]>(
 			`
-			SELECT *
+			SELECT subtasks.*
 			FROM subtasks
-			WHERE todo_id = ?
+			INNER JOIN todos ON subtasks.todo_id = todos.id
+			WHERE subtasks.todo_id = ? AND todos.user_id = ?
 			`,
-			[todoId],
+			[todoId, userId],
 		);
 		response.json(results);
 	} catch (error: unknown) {
@@ -47,14 +53,37 @@ export const fetchSubtask = async (request: Request, response: Response) => {
 }
 
 export const createSubtask = async (request: Request, response: Response) => {
-	const { todo_id, content } = request.body;
+	const { todo_id, content, userId } = request.body;
 
-	if (todo_id === undefined || content === undefined) {
-		response.status(400).json({ error: "todo_id and content is required" });
+	if (
+		todo_id === undefined ||
+		typeof content !== "string" ||
+		content.trim() === "" ||
+		typeof userId !== "string"
+	) {
+		response
+			.status(400)
+			.json({ error: "todo_id, content and userId is required" });
 		return;
 	}
 
 	try {
+		// 1. Check that this todo exists and belongs to this user
+		const [todoResults] = await db.query<RowDataPacket[]>(
+			`
+			SELECT id
+			FROM todos
+			WHERE id = ? AND user_id = ?
+			`,
+			[todo_id, userId],
+		);
+
+		if (todoResults.length === 0) {
+			response.status(404).json({ message: "Todo not found" });
+			return;
+		}
+
+		// 2. If the todo belongs to this user, create the subtask
 		const sql = `
 			INSERT INTO subtasks (todo_id, content, done)
 			VALUES (?, ?, ?)
@@ -62,7 +91,7 @@ export const createSubtask = async (request: Request, response: Response) => {
 
 		const [result] = await db.query<ResultSetHeader>(sql, [
 			todo_id,
-			content,
+			content.trim(),
 			false,
 		]);
 
@@ -71,7 +100,7 @@ export const createSubtask = async (request: Request, response: Response) => {
 			newSubtask: {
 				id: result.insertId,
 				todo_id,
-				content,
+				content: content.trim(),
 				done: false,
 			},
 		});
@@ -83,24 +112,30 @@ export const createSubtask = async (request: Request, response: Response) => {
 
 export const updateSubtask = async (request: Request, response: Response) => {
 	const id = request.params.id;
-	const { content, done } = request.body;
+	const { content, done, userId } = request.body;
 
-	if (content === undefined || done === undefined) {
-		response.status(400).json({ error: "Content and done is required" });
+	if (
+		typeof content !== "string" ||
+		typeof done !== "boolean" ||
+		typeof userId !== "string"
+	) {
+		response.status(400).json({ error: "Content, done and userId is required" });
 		return;
 	}
 
 	try {
 		const sql = `
 		UPDATE subtasks
-        SET content = ?, done = ?
-        WHERE id = ?
+		INNER JOIN todos ON subtasks.todo_id = todos.id
+		SET subtasks.content = ?, subtasks.done = ?
+		WHERE subtasks.id = ? AND todos.user_id = ?
 		`;
 
 		const [result] = await db.query<ResultSetHeader>(sql, [
 			content,
 			done,
 			id,
+			userId,
 		]);
 
 		if (result.affectedRows === 0) {
@@ -122,20 +157,35 @@ export const updateSubtask = async (request: Request, response: Response) => {
 	}
 };
 
-export const deleteSubtask = async(request: Request, response: Response) => {
-    const id = request.params.id
-    try {
-        const sql = `DELETE FROM subtasks WHERE id = ?`;
-        const [result] = await db.query<ResultSetHeader>(sql, [id]);
-        if(result.affectedRows === 0) {
-            response.status(404).json({message: 'Subtask not found'})
-            return
-        }
-        response.json({message: 'Subtask deleted'})
-    } catch (error) {
-        const message = error  instanceof Error ? error.message : 'Unknown error'
-        response.status(500).json({error: message})
-    }
-}
+export const deleteSubtask = async (request: Request, response: Response) => {
+	const id = request.params.id;
+	const { userId } = request.body;
+
+	if (typeof userId !== "string") {
+		response.status(400).json({ error: "userId is required" });
+		return;
+	}
+
+	try {
+		const sql = `
+			DELETE subtasks
+			FROM subtasks
+			INNER JOIN todos ON subtasks.todo_id = todos.id
+			WHERE subtasks.id = ? AND todos.user_id = ?
+		`;
+
+		const [result] = await db.query<ResultSetHeader>(sql, [id, userId]);
+
+		if (result.affectedRows === 0) {
+			response.status(404).json({ message: "Subtask not found" });
+			return;
+		}
+
+		response.json({ message: "Subtask deleted" });
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : "Unknown error";
+		response.status(500).json({ error: message });
+	}
+};
 
 
